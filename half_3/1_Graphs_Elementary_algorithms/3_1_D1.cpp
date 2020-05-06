@@ -14,56 +14,54 @@ using ld = long double;
 using pii = pair<int, int>;
 using pll = pair<ll, ll>;
 
-const ll MOD = 1e9 + 7;
-const double EPS = DBL_EPSILON;
+const int N = 100001;
+vector<int> g[N];
 
-vector<pii> g[1001]; // { to, len }
-set<pii> s; // { len, i }
-int d[1001], dp[1001];
+int color[N];
+bool is_cyclic;
 
-int dfs(int v) {
-	if (dp[v]) return dp[v];
-	for (int i = 0; i < g[v].size(); i++) {
-		int to = g[v][i].ff;
-		if (d[to] < d[v]) dp[v] += dfs(to);
+int ind = 1;
+int ans[N];
+
+void dfs(int v) {
+	color[v] = 1;
+	for (auto to : g[v]) {
+		if (color[to] == 0)
+			dfs(to);
+		if (color[to] == 1)
+			is_cyclic = true;
 	}
-	return dp[v];
+	ans[ind++] = v;
+	color[v] = 2;
 }
 
 int main() {
 	ios::sync_with_stdio(0);
 	cin.tie(0); cout.tie(0);
 
+#ifdef LOCAL_DEBUG
+	freopen("input.txt", "r", stdin);
+#endif
+
 	int n, m;
-	while ((cin >> n) && n) {
-		for (int i = 1; i <= n; i++) g[i].clear();
-		for (int i = 1; i <= n; i++) dp[i] = (i == 2 ? 1 : 0);
-		for (int i = 1; i <= n; i++) d[i] = (i == 2 ? 0 : INT_MAX);
+	cin >> n >> m;
+	for (int i = 0; i < m; i++) {
+		int u, v;
+		cin >> u >> v;
+		g[u].pb(v);
+	}
 
-		cin >> m;
-		for (int i = 0; i < m; i++) {
-			int u, v, w;
-			cin >> u >> v >> w;
-			g[u].pb({ v, w });
-			g[v].pb({ u, w });
-		}
+	for (int i = 1; i <= n; i++) {
+		if (color[i] == 0)
+			dfs(i);
+	}
 
-		s.insert({ 0, 2 });
-		while (!s.empty()) {
-			int v = s.begin()->ss;
-			s.erase(s.begin());
-			for (int i = 0; i < g[v].size(); i++) {
-				int to = g[v][i].ff;
-				int l = g[v][i].ss;
-				if (d[v] + l < d[to]) {
-					s.erase({ d[to], to });
-					d[to] = d[v] + l;
-					s.insert({ d[to], to });
-				}
-			}
-		}
-
-		cout << dfs(1) << endl;
+	if (is_cyclic)
+		cout << -1 << endl;
+	else {
+		reverse(ans + 1, ans + 1 + n);
+		for (int i = 1; i <= n; i++)
+			cout << ans[i] << " \n"[i == n];
 	}
 
 	return 0;
